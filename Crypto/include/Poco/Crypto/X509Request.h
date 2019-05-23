@@ -122,8 +122,8 @@ public:
 	EVPPKey publicKey() const;
 		/// Return public key
 
-	/*void addExtension(const X509Extension& x509Extension);
-		/// Add a specified extension at the and of the extension table.*/
+    void addExtension(const X509Extension& x509Extension);
+        /// Add a specified extension at the and of the extension table.
 
 	void setExtensions(const X509Extension::List& x509Extensions);
 		/// Add a specified extensions.

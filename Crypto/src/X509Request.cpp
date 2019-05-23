@@ -260,9 +260,9 @@ EVPPKey X509Request::publicKey() const
 }
 
 
-/*void X509Request::addExtension(const X509Extension &x509Extension)
+void X509Request::addExtension(const X509Extension &x509Extension)
 {
-	STACK_OF(X509_EXTENSION)* extensions;
+    STACK_OF(X509_EXTENSION)* extensions = NULL;
 	STACK_OF(X509_EXTENSION)* skOldExt = X509_REQ_get_extensions(_pRequest);
 	for (int i = 0;i < sk_X509_EXTENSION_num(skOldExt); ++i)
 	{
@@ -272,8 +272,8 @@ EVPPKey X509Request::publicKey() const
 	X509_EXTENSION* ext = const_cast<X509_EXTENSION*>(static_cast<const X509_EXTENSION*>(x509Extension));
 	X509v3_add_ext(&extensions, ext, -1);
 	X509_REQ_add_extensions(_pRequest, extensions);
-	//sk_X509_EXTENSION_pop_free(extensions, X509_EXTENSION_free);
-}*/
+    sk_X509_EXTENSION_pop_free(extensions, X509_EXTENSION_free);
+}
 
 
 void X509Request::setExtensions(const X509Extension::List &x509Extensions)

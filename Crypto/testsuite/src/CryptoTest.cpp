@@ -31,6 +31,7 @@
 #include <sstream>
 #include <vector>
 
+#include <iostream>
 
 using namespace Poco::Crypto;
 
@@ -436,26 +437,31 @@ void CryptoTest::testSignRequestCertificate()
 	certificate.addSubject(X509Request::NID_COUNTRY, "DE");
 	certificate.addSubject(X509Request::NID_ORGANIZATION_NAME, "Test organization");
 
-	//certificate.addExtension(X509Extension::createWithBasicConstraints(X509Extension::CRITICAL_CA_TRUE));
-	//certificate.addExtension(X509Extension::create(NID_basic_constraints, "critical,CA:FALSE"));
-	//certificate.addExtension(X509Extension::create(NID_key_usage, "critical,digitalSignature"));
+    X509Extension::List extList;
+    extList.push_back(X509Extension::create(NID_ext_key_usage, "critical,1.3.6.1.5.5.7.3.2"));
 
-	X509Extension::List extList;
+    certificate.setExtensions(extList);
+
+    certificate.addExtension(X509Extension::create(NID_basic_constraints, "critical,CA:FALSE"));
+    certificate.addExtension(X509Extension::create(NID_key_usage, "critical,digitalSignature"));
+    certificate.addExtension(X509Extension::createWithBasicConstraints(X509Extension::CRITICAL_CA_TRUE));
+
+    X509Extension::List extList2;
 	extList.push_back(X509Extension::createWithBasicConstraints(X509Extension::CRITICAL_CA_TRUE));
-	extList.push_back(X509Extension::create(NID_key_usage, "critical,digitalSignature"));
+    extList.push_back(X509Extension::create(NID_key_usage, "digitalSignature"));
 
-	certificate.setExtensions(extList);
+    certificate.setExtensions(extList2);
 
 	RSAKey key(RSAKey::KL_1024, RSAKey::EXP_SMALL);
 	EVPPKey publicKey = key.evppkey();
 	certificate.setPublicKey(publicKey);
 
-	certificate.sign(publicKey);
+    std::string certificateSubjectName = certificate.subjectName();
+    assert (certificateSubjectName == "/CN=Common name test/C=DE/O=Test organization");
 
-	std::string certificateSubjectName = certificate.subjectName();
-	assert (certificateSubjectName == "/CN=Common name test/C=DE/O=Test organization");
+    certificate.sign(publicKey);
 
-	std::ostringstream stream;
+    std::ostringstream stream;
 	certificate.save(stream);
 
 	std::string content = stream.str();
@@ -470,10 +476,10 @@ void CryptoTest::testSignRequestCertificate()
 
 	X509Extension::List extensions = certificate.extensions();
 
-	assert (extensions.size() == 2);
-	X509Extension extension = extensions.at(1);
+    assert (extensions.size() == 1);
+    X509Extension extension = extensions.at(0);
 
-	assert (extension.isCritical() == true);
+    assert (extension.isCritical() == true);
 	assert (extension.data()[0] == 0x03);
 	assert (extension.data()[1] == 0x02);
 	assert (extension.data()[2] == 0x07);
